@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================
+   COLORS  (ពណ៌) — change here to restyle the whole page
+   ========================================================= */
+:root{
+  --bg:#eef3f3;
+  --ink:#0d1226;
+  --muted:#5b6475;
+  --accent:#0f7c8a;
+  --glow:#ffd84a;
+  --glow2:#ffae00;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  overflow-x:hidden;
+}
+
+/* ---------- Topographic background ---------- */
+#topo{
+  position:fixed;inset:0;width:100%;height:100%;
+  z-index:0;pointer-events:none;opacity:.45;
+}
+#topo path{fill:none;stroke:#c3cfd2;stroke-width:1}
+
+/* ---------- Navbar ---------- */
+nav{
+  position:fixed;top:18px;left:50%;transform:translateX(-50%);
+  z-index:50;display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.75);backdrop-filter:blur(10px);
+  padding:8px 8px 8px 22px;border-radius:999px;
+  box-shadow:0 8px 30px rgba(13,18,38,.08);
+}
+nav .logo{font-family:'Anton',sans-serif;font-size:18px;letter-spacing:.5px;margin-right:18px;white-space:nowrap}
+nav a{
+  color:var(--ink);text-decoration:none;font-size:14px;font-weight:500;
+  padding:8px 14px;border-radius:999px;transition:background .2s;
+}
+nav a:hover{background:rgba(13,18,38,.06)}
+nav a.contact{background:var(--ink);color:#fff;font-weight:600;margin-left:8px}
+nav a.contact:hover{background:#252c4a}
+
+/* ---------- Hero layout ---------- */
+.hero{
+  position:relative;z-index:1;
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  padding:0 5vw;
+}
+
+/* Left column: name + info + aura button */
+.left{
+  display:flex;flex-direction:column;
+  padding-top:110px;padding-bottom:32px;
+}
+.name-block{margin:auto 0}
+.name{
+  font-family:'Anton',sans-serif;
+  font-size:clamp(56px,8.5vw,128px);
+  line-height:.92;text-transform:uppercase;letter-spacing:-1px;
+}
+.name span{display:block}
+.info{list-style:none;margin-top:36px}
+.info li{
+  display:flex;align-items:center;gap:12px;
+  font-size:14px;letter-spacing:.8px;text-transform:uppercase;
+  margin-bottom:12px;color:var(--ink);
+}
+.info svg{width:15px;height:15px;stroke:var(--accent);fill:none;stroke-width:2}
+
+.aura-btn{
+  display:flex;align-items:center;gap:14px;
+  background:none;border:none;cursor:pointer;text-align:left;
+  font-family:inherit;color:var(--ink);
+}
+.aura-btn .circle{
+  width:42px;height:42px;border-radius:50%;
+  border:1.5px solid var(--ink);
+  display:grid;place-items:center;transition:transform .4s, background .3s;
+}
+.aura-btn:hover .circle{transform:rotate(180deg)}
+.aura-btn.active .circle{background:var(--ink);color:#fff}
+.aura-btn .circle svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+.aura-btn strong{display:block;font-size:13px;letter-spacing:1px;font-weight:600}
+.aura-btn small{font-size:11px;color:var(--muted)}
+
+/* ---------- Center portrait (the hover effect) ---------- */
+.portrait{
+  position:relative;
+  align-self:end;
+  height:calc(100vh - 70px);
+  min-height:520px;
+  aspect-ratio:3/4;
+  max-width:52vw;
+  margin-top:70px;
+  cursor:crosshair;
+  touch-action:none;
+}
+.portrait img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:contain;object-position:bottom center;
+  user-select:none;-webkit-user-drag:none;
+  filter:drop-shadow(18px 10px 22px rgba(13,18,38,.22));
+}
+/* Second image is only a source for the canvas (not shown directly) */
+#aura{display:none}
+/* Paint canvas: JS paints the second image here with a brush */
+#paint{
+  position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;
+}
+
+/* ---------- Right column: info cards ---------- */
+.right{
+  display:flex;flex-direction:column;align-items:flex-end;
+  padding-top:170px;padding-bottom:32px;
+}
+.cards{width:240px}
+.card{
+  position:relative;padding:20px 16px;margin-bottom:10px;
+  --c:var(--ink);--l:12px;--w:1.5px;
+  background:
+    linear-gradient(var(--c),var(--c)) top left    / var(--l) var(--w) no-repeat,
+    linear-gradient(var(--c),var(--c)) top left    / var(--w) var(--l) no-repeat,
+    linear-gradient(var(--c),var(--c)) top right   / var(--l) var(--w) no-repeat,
+    linear-gradient(var(--c),var(--c)) top right   / var(--w) var(--l) no-repeat,
+    linear-gradient(var(--c),var(--c)) bottom left / var(--l) var(--w) no-repeat,
+    linear-gradient(var(--c),var(--c)) bottom left / var(--w) var(--l) no-repeat,
+    linear-gradient(var(--c),var(--c)) bottom right/ var(--l) var(--w) no-repeat,
+    linear-gradient(var(--c),var(--c)) bottom right/ var(--w) var(--l) no-repeat;
+}
+.card .label{font-size:11px;letter-spacing:1.4px;color:var(--accent);font-weight:600;margin-bottom:10px}
+.card .title{font-size:14px;letter-spacing:.6px;font-weight:500;text-transform:uppercase}
+.card .sub{font-size:12px;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;margin-top:3px;line-height:1.4}
+.card .spark{width:100%;height:40px;margin-top:10px}
+.card .spark path{fill:none;stroke:var(--ink);stroke-width:1.5}
+.stats{display:flex;justify-content:space-between;margin-top:4px}
+.stats small{display:block;font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:4px}
+.stats b{font-family:'Anton',sans-serif;font-size:30px;font-weight:400}
+
+.view-btn{
+  margin-top:auto;
+  display:inline-flex;align-items:center;gap:12px;
+  padding:16px 24px;border:1.5px solid var(--accent);
+  color:var(--accent);text-decoration:none;
+  font-size:13px;letter-spacing:1.4px;font-weight:600;
+  transition:background .25s,color .25s;
+}
+.view-btn:hover{background:var(--accent);color:#fff}
+
+/* ---------- Responsive (phone / tablet) ---------- */
+@media (max-width:980px){
+  nav a:not(.contact){display:none}
+  .hero{grid-template-columns:1fr;padding:0 16px}
+  .left{padding-top:100px;padding-bottom:0}
+  .name-block{margin:0}
+  .aura-btn{margin-top:24px}
+  .portrait{height:auto;min-height:0;width:min(92vw,480px);max-width:none;justify-self:center;margin-top:24px}
+  .right{align-items:stretch;padding-top:24px}
+  .cards{width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- Topographic background (drawn by JavaScript) -->
+<svg id="topo" preserveAspectRatio="xMidYMid slice"></svg>
+
+<!-- ================= NAVBAR ================= -->
+<nav>
+  <span class="logo">YOUR NAME</span>          <!-- ✏️ EDIT -->
+  <a href="#about">About</a>
+  <a href="#achievements">Achievements</a>
+  <a href="#skills">Skills</a>
+  <a href="#projects">Projects</a>
+  <a href="#business">Business</a>
+  <a href="#contact" class="contact">Contact ↗</a>
+</nav>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+
+  <!-- LEFT -->
+  <div class="left">
+    <div class="name-block">
+      <h1 class="name">
+        <span>KEO</span>                       <!-- ✏️ EDIT first name -->
+        <span>SOKCHEA</span>                       <!-- ✏️ EDIT last name -->
+      </h1>
+      <ul class="info">
+        <li>
+          <svg viewBox="0 0 24 24"><path d="M12 22s7-7.2 7-12a7 7 0 0 0-14 0c0 4.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+          Phnom Penh, Cambodia                  <!-- ✏️ EDIT -->
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5"/></svg>
+          Software Development, Year 2          <!-- ✏️ EDIT -->
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>
+          Full-Stack and UI/UX                  <!-- ✏️ EDIT -->
+        </li>
+      </ul>
+    </div>
+
+    <button class="aura-btn" id="auraBtn">
+      <span class="circle">
+        <svg viewBox="0 0 24 24"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg>
+      </span>
+      <span>
+        <strong id="auraText">SHOW AURA</strong>
+        <small>Switch portrait</small>
+      </span>
+    </button>
+  </div>
+
+  <!-- CENTER: the two stacked images -->
+  <div class="portrait" id="portrait">
+    <!-- ✏️ Image 1: your normal photo (PNG with transparent background) -->
+    <img id="base" src="image1.png" alt="My photo">
+    <!-- ✏️ Image 2: the hidden image you "paint" with the mouse (same size as image 1) -->
+    <img id="aura" src="image2.png" alt="My aura">
+    
+    <!-- The brush paints image 2 onto this canvas -->
+    <canvas id="paint"></canvas>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+    <div class="cards">
+      <div class="card">
+        <div class="label">CURRENTLY</div>
+        <div class="title">Software Dev Student</div>         <!-- ✏️ EDIT -->
+        <div class="sub">Norton University</div>              <!-- ✏️ EDIT -->
+      </div>
+      <div class="card">
+        <div class="label">LATEST PROJECT</div>
+        <div class="title">My Project</div>                   <!-- ✏️ EDIT -->
+        <div class="sub">JavaScript, 2026</div>               <!-- ✏️ EDIT -->
+        <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none">
+          <path d="M0 32 C 25 22, 40 14, 60 12 S 95 20, 120 22 S 170 24, 200 34"/>
+        </svg>
+      </div>
+      <div class="card">
+        <div class="label">AT A GLANCE</div>
+        <div class="stats">
+          <div><small>PROJECTS</small><b>9</b></div>          <!-- ✏️ EDIT -->
+          <div><small>SKILLS</small><b>5</b></div>            <!-- ✏️ EDIT -->
+          <div><small>YEARS</small><b>2</b></div>             <!-- ✏️ EDIT -->
+        </div>
+      </div>
+    </div>
+
+    <a href="#projects" class="view-btn">VIEW PROJECTS ↗</a>
+  </div>
+</section>
+
+<script>
+/* =========================================================
+   1) PLACEHOLDER IMAGES
+   If photo.png / aura.png are not found, show demo shapes
+   so you can still test the effect.
+   ========================================================= */
+function placeholder(body, head){
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${head}"/><stop offset="1" stop-color="${body}"/>
+    </linearGradient></defs>
+    <circle cx="150" cy="130" r="62" fill="url(#g)"/>
+    <path d="M30 400c0-95 55-160 120-160s120 65 120 160z" fill="url(#g)"/>
+  </svg>`;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+const fallbacks = {
+  base: placeholder('#aeb8bf', '#d5dde1'),   // grey person
+  aura: placeholder('#1e5bd8', '#ffd84a')    // gold/blue person
+};
+document.querySelectorAll('.portrait img').forEach(img => {
+  const useFallback = () => { img.src = fallbacks[img.id]; };
+  if (img.complete && img.naturalWidth === 0) useFallback();
+  else img.addEventListener('error', useFallback, { once:true });
+});
+
+/* =========================================================
+   2) PAINT-BRUSH REVEAL  (ប៊ិចលាបពណ៌)
+   Swipe the mouse over the photo: it paints a glowing trail
+   in the shape you draw, and image 2 shows inside the trail.
+   The trail slowly shrinks and fades away.
+   ========================================================= */
+const portrait = document.getElementById('portrait');
+const baseImg  = document.getElementById('base');
+const auraImg  = document.getElementById('aura');
+const canvas   = document.getElementById('paint');
+const ctx      = canvas.getContext('2d');
+const auraBtn  = document.getElementById('auraBtn');
+const auraText = document.getElementById('auraText');
+
+/* ✏️ Settings you can change */
+const BRUSH_SIZE = 0.16;   // brush thickness (part of photo width)
+const LIFE       = 500;   // how long the paint stays (milliseconds)
+const RIM        = 7;      // thickness of the yellow edge line (px)
+const GLOW       = '#fff7b8';  // soft light yellow line
+const GLOW_SOFT  = 'rgba(255, 226, 90, 0.9)'; // gentle glow around it
+const SMOOTH     = 0.28;   // 0.1 = very smooth/slow, 0.5 = fast
+
+// Hidden helper canvases
+const maskC = document.createElement('canvas'), mask = maskC.getContext('2d');
+const glowC = document.createElement('canvas'), glow = glowC.getContext('2d');
+const auraC = document.createElement('canvas'), aura = auraC.getContext('2d');
+const silC  = document.createElement('canvas'), sil  = silC.getContext('2d');
+
+let W = 0, H = 0, dpr = 1;
+let points   = [];     // painted points {x, y, t, id}
+let strokeId = 0;      // new id each time the mouse enters again
+let locked   = false;  // "Show Aura" button
+let reveal   = 0;      // 0 → 1 fade for full reveal
+
+/* Draw an image like CSS object-fit:contain + bottom center */
+function drawFitted(c, img){
+  if (!img.naturalWidth) return;
+  const s  = Math.min(W / img.naturalWidth, H / img.naturalHeight);
+  const dw = img.naturalWidth * s, dh = img.naturalHeight * s;
+  c.drawImage(img, (W - dw) / 2, H - dh, dw, dh);
+}
+
+/* Make all canvases match the portrait size (sharp on retina) */
+function resize(){
+  const r = portrait.getBoundingClientRect();
+  dpr = window.devicePixelRatio || 1;
+  W = Math.round(r.width * dpr);
+  H = Math.round(r.height * dpr);
+  [canvas, maskC, glowC, auraC, silC].forEach(c => { c.width = W; c.height = H; });
+  buildSilhouette();
+}
+
+/* Shape of the person (both photos) so the glow stays on the body */
+function buildSilhouette(){
+  sil.clearRect(0, 0, W, H);
+  drawFitted(sil, baseImg);
+  drawFitted(sil, auraImg);
+}
+
+/* Draw the painted trail. Older paint = thinner (it shrinks away) */
+function drawTrail(c, extra, color, now){
+  c.lineCap = 'round';
+  c.lineJoin = 'round';
+  c.strokeStyle = color;
+  const brush = W * BRUSH_SIZE;
+  for (let i = 1; i < points.length; i++){
+    const a = points[i - 1], b = points[i];
+    if (a.id !== b.id) continue;                 // don't join separate swipes
+    const life = 1 - (now - b.t) / LIFE;         // 1 = new, 0 = gone
+    if (life <= 0) continue;
+    const k = 1 - Math.pow(1 - life, 3);         // smooth ease-out
+    c.lineWidth = brush * k + extra * dpr * k;
+    c.beginPath();
+    c.moveTo(a.x, a.y);
+    c.lineTo(b.x, b.y);
+    c.stroke();
+  }
+}
+
+function frame(now){
+  moveBrush(now);
+  // Remove old paint
+  points = points.filter(p => now - p.t < LIFE);
+
+  ctx.clearRect(0, 0, W, H);
+
+  if (points.length > 1){
+    // a) Mask = shape of the brush strokes
+    mask.clearRect(0, 0, W, H);
+    drawTrail(mask, 0, '#fff', now);
+
+    // b) Glowing yellow rim: a slightly thicker stroke with blur
+    glow.clearRect(0, 0, W, H);
+    glow.save();
+    glow.shadowColor = GLOW_SOFT;
+    glow.shadowBlur  = 10 * dpr;
+    drawTrail(glow, RIM, GLOW, now);     // thin light-yellow edge
+    glow.restore();
+    glow.globalCompositeOperation = 'destination-in';   // keep glow on the body only
+    glow.drawImage(silC, 0, 0);
+    glow.globalCompositeOperation = 'source-over';
+
+    // c) Image 2 cut out in the brush shape
+    aura.clearRect(0, 0, W, H);
+    drawFitted(aura, auraImg);
+    aura.globalCompositeOperation = 'destination-in';
+    aura.drawImage(maskC, 0, 0);
+    aura.globalCompositeOperation = 'source-over';
+
+    ctx.drawImage(glowC, 0, 0);
+    ctx.drawImage(auraC, 0, 0);
+  }
+
+  // d) "Show Aura" button: fade in the whole image 2
+  reveal += ((locked ? 1 : 0) - reveal) * 0.1;
+  if (reveal > 0.01){
+    ctx.globalAlpha = reveal;
+    drawFitted(ctx, auraImg);
+    ctx.globalAlpha = 1;
+  }
+
+  requestAnimationFrame(frame);
+}
+
+/* ---------- Mouse / finger painting (smooth) ----------
+   The brush does not jump to the mouse. It glides toward it
+   a little every frame, so the stroke is soft and curvy. */
+let mouse = null;      // real mouse position
+let brush = null;      // smooth brush position
+let inside = false;
+
+function toCanvas(e){
+  const r = portrait.getBoundingClientRect();
+  return { x: (e.clientX - r.left) * dpr, y: (e.clientY - r.top) * dpr };
+}
+portrait.addEventListener('pointerenter', e => {
+  inside = true; strokeId++;
+  mouse = toCanvas(e); brush = { ...mouse };
+});
+portrait.addEventListener('pointerdown', e => {
+  inside = true; strokeId++;
+  mouse = toCanvas(e); brush = { ...mouse };
+});
+portrait.addEventListener('pointermove', e => { mouse = toCanvas(e); });
+portrait.addEventListener('pointerleave', () => { inside = false; });
+portrait.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') inside = false; });
+
+function moveBrush(now){
+  if (!inside || !mouse || !brush) return;
+  const nx = brush.x + (mouse.x - brush.x) * SMOOTH;
+  const ny = brush.y + (mouse.y - brush.y) * SMOOTH;
+  const dist = Math.hypot(nx - brush.x, ny - brush.y);
+  if (dist < 0.5) return;                     // not moving → nothing new
+  const step = 4 * dpr;                        // fill gaps for a clean line
+  for (let d = step; d < dist; d += step){
+    const t = d / dist;
+    points.push({ x: brush.x + (nx - brush.x) * t, y: brush.y + (ny - brush.y) * t, t: now, id: strokeId });
+  }
+  points.push({ x: nx, y: ny, t: now, id: strokeId });
+  brush = { x: nx, y: ny };
+}
+
+/* ---------- "Show Aura" button ---------- */
+auraBtn.addEventListener('click', () => {
+  locked = !locked;
+  auraBtn.classList.toggle('active', locked);
+  auraText.textContent = locked ? 'HIDE AURA' : 'SHOW AURA';
+});
+
+/* ---------- Start ---------- */
+window.addEventListener('resize', resize);
+[baseImg, auraImg].forEach(img => img.addEventListener('load', buildSilhouette));
+resize();
+requestAnimationFrame(frame);
+
+/* =========================================================
+   3) TOPOGRAPHIC BACKGROUND LINES
+   ========================================================= */
+(function drawTopo(){
+  const svg = document.getElementById('topo');
+  const W = 1600, H = 900;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const centers = [[260, 180], [1300, 150], [900, 720], [120, 780], [1500, 700]];
+  let html = '';
+  centers.forEach(([cx, cy], ci) => {
+    for (let ring = 1; ring <= 9; ring++){
+      const r = ring * 34;
+      let d = '';
+      for (let a = 0; a <= 72; a++){
+        const ang = a / 72 * Math.PI * 2;
+        const wobble = 1
+          + 0.18 * Math.sin(ang * 3 + ci + ring * 0.3)
+          + 0.08 * Math.sin(ang * 5 + ci * 2);
+        const x = cx + Math.cos(ang) * r * wobble * 1.3;
+        const y = cy + Math.sin(ang) * r * wobble;
+        d += (a === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1) + ' ';
+      }
+      html += `<path d="${d}Z"/>`;
+    }
+  });
+  svg.innerHTML = html;
+})();
+</script>
+</body>
+</html>
